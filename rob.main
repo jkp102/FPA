@@ -1,0 +1,70 @@
+.PROGRAM rob.main()
+;
+; ABSTRACT:     Main robot application program
+;
+; INPUTS:       None
+;
+; OUTPUTS:      None
+
+        GLOBAL REAL rob.run
+
+        GLOBAL LOC place.loc
+        GLOBAL LOC pick.loc
+        GLOBAL LOC pick, pal, dif
+        GLOBAL REAL nx, ny, pal.row, pal.col
+
+; Initialize robot and application variables
+       ; CALL rob.init()
+        CALL pal.lnit()
+; Initialize error reporting and move the robot to a safe location
+        CALL err.init()
+
+        IF SIG(i.manual.ready) THEN
+            GOTO 30
+        END
+        CALL rob.move.safe()
+; Main robot processing loop
+ 30     
+        WHILE o.rob.run DO
+            IF SIG(1105) THEN
+                SPEED 0, 0
+            END
+            IF SIG(-1105) THEN
+                SPEED 65
+            END
+            REACT 2001, interrupt, 10
+;            SIGNAL -o.home
+            IF SIG(i.manual.ready) AND SIG(-i.auto.ready) THEN
+                CALL rob.manual()
+            ELSE
+                REACT 2001, interrupt, 10
+                CALL rob.move.safe()
+                IF SIG(-i.manual.ready) AND SIG(i.auto.ready) THEN
+                    CALL pal.lnit()
+
+                    FOR ny = 0 TO 3
+                        REACT 2001, interrupt, 10
+                        CALL rob.pick()
+                        CALL rob.pick_cup()
+                    END
+                END
+                REACT 2001, interrupt, 10
+                CALL rob.move.safe()
+                IF SIG(i.dry.run) AND SIG(i.auto.ready) THEN
+                    CALL pal.lnit()
+                    FOR ny = 0 TO 3
+                        CALL rob.pick()
+                        CALL rob.pick_cup()
+                    END
+                END
+            END
+            IF rt.stop THEN
+                GOTO 90
+            END
+        END
+ 90     
+        CALL rob.move.safe()
+
+        RETURN
+
+.END
