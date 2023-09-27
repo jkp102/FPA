@@ -1,0 +1,59 @@
+.PROGRAM pal.lnit()
+;
+; ABSTRACT:
+;
+; INPUTS:
+;
+; OUTPUTS:
+;
+; SIDE EFFECTS:
+;
+; DATA STRUCT:
+;
+; MISC:  Program created in ACE version 3.8.3.50
+;
+;* Copyright (c) 2020 by {company name}
+        GLOBAL REAL a.vacuum.on, a.vacuum.off
+
+        ny = 0
+        ;
+        ATTACH ()
+        SELECT ROBOT = 1
+
+;; ??????? ON/OFF?? ?????? ???????.
+
+        a.vacuum.on = 3001
+        a.vacuum.off = -3001
+
+; ??? ???? ?????? ????
+        COARSE 100 ALWAYS
+
+        SET pick.loc[1] = TRANS(-408.574,375,441.2,2,179.5,0)
+        SET pick.loc[2] = TRANS(-408.574,455,441.2,2,179.5,0)
+        SET pick.loc[3] = TRANS(-408.574,535,441.2,3,179.999,0)
+        SET pick.loc[4] = TRANS(-408.574,615,441.2,3,179.999,0)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;??? ??? ???
+        SET pick1.loc[1] = TRANS(-408.574,375,441.2,102,179.5,0)
+        SET pick1.loc[2] = TRANS(-408.574,455,441.2,102,179.5,0)
+        SET pick1.loc[3] = TRANS(-408.574,535,441.2,103,179.999,0)
+        SET pick1.loc[4] = TRANS(-408.574,615,441.2,103,179.999,0)
+        ;CUP PICK LOCATION
+        SET pick1.loc.cup[1] = TRANS(-340.14,375,427,272,179.999,0)
+        SET pick1.loc.cup[2] = TRANS(-339.14,455,427,272,179.999,-0.52)
+        SET pick1.loc.cup[3] = TRANS(-339.14,535,427,272,179.999,-0.52)
+        SET pick1.loc.cup[4] = TRANS(-339.14,615,427,272,179.999,-0.52)
+
+ ; ???? ?????? ???? ??????
+
+        pick.pal.index = 1
+        pick.pal.index2 = 1
+
+ ; ??? ?? ????? ???
+
+
+
+        RETURN
+
+.END
