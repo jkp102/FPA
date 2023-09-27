@@ -1,0 +1,177 @@
+.PROGRAM rob.pick_cup()
+;
+; ABSTRACT:     Perform a pick operation at a static location
+;
+; INPUTS:       None
+;
+; OUTPUTS:      None
+;
+        GLOBAL LOC place.loc
+        GLOBAL LOC pick.loc
+
+        TYPE " cycle = ", TIMER(3)
+;
+        IF (NOT SIG(i.pick2.ready)) OR (NOT SIG(i.auto.ready)) THEN
+            DO
+                IF NOT SIG(i.auto.ready) THEN
+                    GOTO 100
+                END
+                RELEASE
+            UNTIL SIG(i.pick2.ready) AND SIG(i.auto.ready)
+        END
+
+        TIMER (3) = 0
+
+; Calculate the next position in the pallet, handling rollover
+
+; Approach and move to the location
+        LEFTY
+        ABOVE
+
+
+
+
+        SPEED speed.usual MONITOR ALWAYS
+        SPEED speed.usual ALWAYS
+
+
+
+        REACT 2001, interrupt, 10
+
+        MOVE safe.loc.pp
+
+        APPRO pick1.loc.cup[pick.pal.index2], 60
+        BREAK
+
+        SPEED speed.grip MONITOR ALWAYS
+        SPEED speed.grip ALWAYS
+
+        REACT 2001, interrupt, 10
+
+        MOVES pick1.loc.cup[pick.pal.index2]
+        BREAK
+
+; Actuate the gripper and depart
+
+        CALL rob.grip(FALSE)
+
+        DO
+
+        UNTIL SIG(i.hand.case.clm)
+
+        BREAK
+        WAIT.EVENT , 0.3
+
+        SPEED speed.usual MONITOR ALWAYS
+        SPEED speed.usual ALWAYS
+
+        REACT 2001, interrupt, 10
+
+        APPRO pick1.loc.cup[pick.pal.index2], 60
+        BREAK
+
+        pick.pal.index2 = pick.pal.index2+1
+        IF (pick.pal.index2 > pal.row) THEN
+            pick.pal.index2 = 1
+        END
+
+;        IF SIG(-i.vaccum.sen) THEN
+;            SIGNAL o.vaccum.error
+;        ELSE
+;            SIGNAL -o.vaccum.error
+;        END
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;        IF (NOT SIG(i.place2.ready)) OR (NOT SIG(i.auto.ready)) THEN
+;            DO
+;                IF NOT SIG(i.auto.ready) THEN
+;                    GOTO 100
+;                END
+;                RELEASE
+;            UNTIL SIG(i.place2.ready) AND SIG(i.auto.ready)
+;        END
+ ;
+; Approach and move to the location
+
+        LEFTY
+        ABOVE
+        NOFLIP
+
+        MOVE safe.loc.pp
+        SIGNAL o.pick.cup.end
+; cup right up origin
+
+        MOVE place.loc.cup
+        MOVE #place.loc.cup
+        MOVE #place.loc.cup_1
+
+        MOVE #place.loc.cup_2
+;        LEFTY
+;        ABOVE
+;        FLIP
+        MOVE #place.loc.cup_3
+        NOFLIP
+        WAIT.EVENT 0.4
+        MOVE #place.loc.cup_2
+
+
+        MOVE #place.loc.cup_1
+        MOVE #place.loc.cup
+        MOVE place.loc.cup
+        BREAK
+
+ ; cup right down origin
+;        MOVES #place.loc.cup
+;        MOVE #place.loc.cup_4
+;        MOVE #place.loc.cup_5
+;        MOVE #place.loc.cup_6
+;        MOVE #place.loc.cup_5
+;        MOVE #place.loc.cup_4
+;        MOVES #place.loc.cup
+;        BREAK
+
+        SPEED speed.usual MONITOR ALWAYS
+        SPEED speed.usual ALWAYS
+
+        REACT 2001, interrupt, 10
+
+        APPRO place.loc.throw, 70
+        BREAK
+
+; cup throw
+        MOVE place.loc.throw
+        BREAK
+
+; Actuate the gripper and depart
+
+        CALL rob.grip(TRUE)
+        BREAK
+
+
+        WAIT.EVENT , 0.3
+        DO
+
+        UNTIL SIG(i.hand.case.un)
+        WAIT
+
+        APPRO place.loc.throw, 60
+
+        MOVE safe.loc.pp
+
+        WAIT.EVENT , 0.1
+
+        BREAK
+        SIGNAL -o.pick.cup.end
+        SIGNAL -o.vaccum.error
+;
+
+; Clear any tool applied for the placement operation
+
+        IF (NOT IDENTICAL(TOOL,grip.tool)) THEN
+            TOOL grip.tool
+        END
+
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 100    
+        RETURN
+.END
