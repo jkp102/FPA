@@ -1,0 +1,192 @@
+.PROGRAM rob.pick()
+;
+; ABSTRACT:     Perform a pick operation at a static location
+;
+; INPUTS:       None
+;
+; OUTPUTS:      None
+;
+        GLOBAL LOC place.loc
+        GLOBAL LOC pick.loc
+
+        TYPE " cycle = ", TIMER(3)
+;
+        IF (NOT SIG(i.pick1.ready)) OR (NOT SIG(i.auto.ready)) THEN
+            DO
+                IF NOT SIG(i.auto.ready) THEN
+                    GOTO 100
+                END
+                RELEASE
+            UNTIL SIG(i.pick1.ready) AND SIG(i.auto.ready)
+        END
+
+
+        TIMER (3) = 0
+; Calculate the next position in the pallet, handling rollover
+
+  ; Approach and move to the location
+        LEFTY
+        ABOVE
+
+
+
+        SPEED speed.usual MONITOR ALWAYS
+        SPEED speed.usual ALWAYS
+
+
+
+        REACT 2001, interrupt, 10
+
+
+        MOVE safe.loc.pp
+        CALL rob.grip(TRUE)
+        APPRO pick.loc[pick.pal.index], 50
+        BREAK
+
+        SPEED speed.grip MONITOR ALWAYS
+        SPEED speed.grip ALWAYS
+
+        REACT 2001, interrupt, 10
+
+        MOVES pick.loc[pick.pal.index]
+        BREAK
+
+
+
+        IF SIG(i.dry.run) THEN
+            GOTO 50
+
+        END
+        ;;;;;;; ??? ???? ????;;;;;;;;;;;;;++++++++++++++++++++++++++++++++++++++
+        DO
+
+        UNTIL SIG(i.hand.case.de)
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;++++++++++++++++++++++++++++++++++++
+ 50     
+
+
+; actuate the gripper and depart
+        CALL rob.grip(FALSE)
+        BREAK
+        WAIT.EVENT , 0.5
+
+        DEPART -2.5
+        BREAK
+        WAIT.EVENT , 0.4
+
+        DO
+        UNTIL SIG(i.hand.case.clm)
+        BREAK
+
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,2.5,-20,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,2,-30,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,1.5,-40,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,1,-50,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,0.5,-60,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,0,-70,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,-0.5,-80,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,-1,-90,0,0)
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,-1.5,-100,0,0)
+        BREAK
+;        WAIT.EVENT , 0.35
+
+        SPEED 70 MONITOR ALWAYS
+        SPEED 70 ALWAYS
+
+        REACT 2001, interrupt, 10
+
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,-3,-100,0,0)
+        BREAK
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,-1.5,-100,0,0)
+        BREAK
+        MOVE pick.loc[pick.pal.index]:TRANS(0,0,-4,-100,0,0)
+        BREAK
+        WAIT.EVENT , 0.5
+
+
+
+        SPEED speed.usual MONITOR ALWAYS
+        SPEED speed.usual ALWAYS
+
+        REACT 2001, interrupt, 10
+
+        APPROS pick1.loc[pick.pal.index], 60
+        BREAK
+
+        pick.pal.index = pick.pal.index+1
+        IF (pick.pal.index > pal.row) THEN
+            pick.pal.index = 1
+
+        END
+
+;        IF SIG(-i.vaccum.sen) THEN
+;            SIGNAL o.vaccum.error
+;        ELSE
+;            SIGNAL -o.vaccum.error
+;        END
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;        SPEED 100 MONITOR ALWAYS
+;        SPEED 100 ALWAYS
+
+;        IF (NOT SIG(i.place1.ready)) OR (NOT SIG(i.auto.ready)) THEN
+;            DO
+;                IF NOT SIG(i.auto.ready) THEN
+;                    GOTO 100
+;                END
+;                RELEASE
+;            UNTIL SIG(i.place1.ready) AND SIG(i.auto.ready)
+;        END
+ ;
+; Approach and move to the location
+        SPEED speed.usual MONITOR ALWAYS
+        SPEED speed.usual ALWAYS
+        REACT 2001, interrupt, 10
+
+
+        MOVE safe.loc.pp
+        SIGNAL o.pick.end
+
+
+
+;        LEFTY
+        APPRO place.loc, 60
+        MOVE place.loc
+        BREAK
+; Actuate the gripper and depart
+
+        CALL rob.grip(TRUE)
+        BREAK
+
+
+        WAIT.EVENT , 0.3
+        DO
+
+        UNTIL SIG(i.hand.case.un)
+        WAIT
+
+        APPRO place.loc, 60
+
+        MOVE safe.loc.pp
+
+        WAIT.EVENT , 0.1
+
+        BREAK
+        SIGNAL -o.pick.end
+        SIGNAL -o.vaccum.error
+
+
+
+; Clear any tool applied for the placement operation
+
+        IF (NOT IDENTICAL(TOOL,grip.tool)) THEN
+            TOOL grip.tool
+        END
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+ 100    
+        RETURN
+.END
