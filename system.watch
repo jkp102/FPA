@@ -1,0 +1,157 @@
+.PROGRAM system.watch()
+;
+; ABSTRACT:
+;
+; INPUTS:
+;
+; OUTPUTS:
+;
+; SIDE EFFECTS:
+;
+; DATA STRUCT:
+;
+; MISC:  Program created in ACE version 3.8.3.50
+;S
+;* Copyright (c) 2020 by {company name}
+
+        LOCAL error, tim0, mnumber, $error, $mname
+        LOCAL startok, tim
+
+        CALL rob.init()
+
+        error = 0
+        system.run = TRUE
+        rt.stop = TRUE
+        rt.start = FALSE
+        $sys.message = "System Started"
+
+
+              ;Robot1 manual Start
+
+
+        ABORT 1
+        CYCLE.END 1
+        KILL 1
+        EXECUTE 1 pause()
+
+
+        ABORT 2
+        CYCLE.END 2
+        KILL 2
+        EXECUTE 2 rob.home()
+
+
+
+
+        WHILE system.run DO
+            WAIT
+;System Stop
+            IF NOT SIG(i.auto.ready) AND NOT SIG(i.manual.ready) AND NOT SIG(i.dry.run) THEN
+                rt.stop = TRUE
+                rt.start = FALSE
+                SIGNAL -o.rob.error
+
+            END
+;System Start.Start Button Pressed
+            IF SWITCH(POWER) THEN
+                IF (STATE(1) == 7) OR (STATE(3) == 5) THEN
+
+                    IF SIG(1105) THEN
+                        SIGNAL (2001)
+                    END
+                    IF SIG(-1105) THEN
+                        SIGNAL (-2001)
+
+                    END
+
+
+                    SIGNAL o.rob.run
+
+
+
+
+              ;Robot1 auto Start
+                    IF SIG(i.auto.ready) AND SIG(-i.dry.run) THEN
+
+                        IF NOT rt.start THEN
+                            ABORT 0
+                            CYCLE.END 0
+                            KILL 0
+                            rt.start = TRUE
+                            rt.stop = FALSE
+
+
+
+                            EXECUTE 0 rob.main()
+
+                        END
+                    ELSE
+
+                    END
+
+
+
+              ;Robot1 manual Start
+                    IF SIG(i.manual.ready) THEN
+                        IF NOT rt.start THEN
+                            ABORT 0
+                            CYCLE.END 0
+                            KILL 0
+                            rt.start = TRUE
+                            rt.stop = FALSE
+
+                            EXECUTE 0 rob.main()
+
+                        END
+                    ELSE
+
+                    END
+
+
+
+              ;Robot1 dry run Start
+                    IF SIG(i.dry.run) AND SIG(i.auto.ready) THEN
+                        IF NOT rt.start THEN
+                            ABORT 0
+                            CYCLE.END 0
+                            KILL 0
+                            rt.start = TRUE
+                            rt.stop = FALSE
+
+
+
+                            EXECUTE 0 rob.main()
+
+                        END
+                    ELSE
+
+                    END
+
+
+                    IF SIG(-i.auto.ready) AND SIG(-i.manual.ready) AND SIG(-i.dry.run) THEN
+                        SIGNAL -o.rob.run
+                    END
+                ELSE
+                    SIGNAL -o.rob.run
+
+                END
+
+            ELSE
+                SIGNAL -o.rob.run
+                rt.start = FALSE
+                rt.stop = TRUE
+
+
+                CALL check.robot(error)
+                IF NOT system.run GOTO 100
+            END
+
+        END
+
+
+ 100    
+        SIGNAL -o.rob.run
+        rt.stop = TRUE
+
+        rt.start = FALSE
+.END
